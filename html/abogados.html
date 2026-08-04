@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Abogados</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+</head>
+
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <h3>⚖ Sistema Jurídico</h3>
+            <button onclick="window.location.href='dashboard-admin.html'">Inicio</button>
+            <button onclick="window.location.href='clientes.html'">Clientes</button>
+            <button onclick="window.location.href='abogados.html'">Abogados</button>
+            <button onclick="window.location.href='casos.html'">Casos</button>
+            <button class="logout" onclick="cerrarSesion()">Cerrar sesión</button>
+        </div>
+
+        <div class="main-content" style="display: flex; gap: 20px; margin-top: 80px; padding: 20px;">
+
+            <div class="box" style="flex: 1; min-width: 300px;">
+                <h2>Gestión de Abogados</h2>
+                <form id="formAbogado">
+    <input type="hidden" id="idAbogadoOculto" value=""> 
+
+    <input type="text" id="idAbogado" placeholder="Identificación" required>
+
+    <div style="display: flex; gap: 10px;">
+        <input type="text" id="nombreAbogado" placeholder="Nombre" required style="flex: 1;">
+        <input type="text" id="apellidoAbogado" placeholder="Apellido" required style="flex: 1;">
+    </div>
+
+    <input type="text" id="especialidadAbogado" list="listaEspecialidades" placeholder="Seleccione o escriba una especialidad" required>
+    <datalist id="listaEspecialidades"></datalist>
+
+    <input type="email" id="correoAbogado" placeholder="Correo" required>
+    <input type="text" id="direccionAbogado" placeholder="Dirección" required>
+    <input type="text" id="telefonoAbogado" placeholder="Teléfono" required>
+    <input type="text" id="tarjetaAbogado" placeholder="Tarjeta Profesional" required>
+
+    <div style="margin-top: 15px;">
+        <button type="submit" id="btnGuardar" style="background-color: #10b981; color: white;">Agregar Abogado</button>
+        
+        <button type="reset" id="btnLimpiar" style="background-color: #f59e0b; color: white;">Vaciar Celdas</button>
+        
+        <button type="button" id="btnCancelar" style="display:none; background-color: #6b7280; color: white;" onclick="resetearFormAbogado()">
+            Cancelar Edición
+        </button>
+    </div>
+</form>
+            </div>
+
+            <div class="box" style="flex: 1.5; min-width: 400px;">
+                <h3>Lista de Abogados</h3>
+                <div id="contenedorLista" style="max-height: 500px; overflow-y: auto;">
+                    <ul id="listaAbogados" style="list-style: none; padding: 0;"></ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script src="../js/script.js"></script>
+</body>
+
+</html>

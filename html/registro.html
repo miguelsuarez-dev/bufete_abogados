@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+<div class="box">
+    <h2>Solicitud de Registro</h2>
+    <form action="../php/login.php" method="POST" id="formRegistro">
+        <input type="hidden" name="accion" value="registro">
+        <select name="tipoDoc" required>
+            <option value="">Tipo Documento</option>
+            <option value="CC">CC</option>
+            <option value="CE">CE</option>
+        </select>
+        <input type="text"     name="documento"  placeholder="Número Documento" required>
+        <input type="text"     name="nombre"      placeholder="Nombre" required>
+        <input type="email"    name="correo"      placeholder="Correo" required>
+        <input type="text"     name="telefono"    placeholder="Teléfono" required>
+        <select name="rol" required>
+            <option value="">Rol</option>
+            <option value="cliente">Cliente</option>
+            <option value="abogado">Abogado</option>
+        </select>
+        <input type="password" name="clave"       placeholder="Contraseña" required>
+        <input type="password" name="confirmar"   placeholder="Confirmar contraseña" required>
+        <button type="submit">Enviar Solicitud</button>
+    </form>
+    <button onclick="window.location.href='index.html'">Volver al inicio</button>
+</div>
+<script src="../js/script.js"></script>
+</body>
+</html>

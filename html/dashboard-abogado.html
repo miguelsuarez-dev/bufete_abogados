@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Portal Abogado</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+    <style>
+        .estado-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .estado-Pendiente   { background:#FEF3C7; color:#92400E; }
+        .estado-En-proceso  { background:#DBEAFE; color:#1E40AF; }
+        .estado-Finalizado  { background:#D1FAE5; color:#065F46; }
+        .estado-Archivado   { background:#F3F4F6; color:#6B7280; }
+
+        .card-caso {
+            background: #fff;
+            border: 1px solid #E5E7EB;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .card-caso h4 {
+            margin: 0 0 6px;
+            color: #1E3A5F;
+            font-size: 16px;
+        }
+        .card-caso p {
+            margin: 4px 0;
+            color: #555;
+            font-size: 14px;
+        }
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .card-footer select {
+            width: auto;
+            padding: 5px 10px;
+            font-size: 13px;
+        }
+        .card-footer button {
+            width: auto;
+            padding: 6px 14px;
+            font-size: 13px;
+            margin: 0;
+        }
+        .filtro-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filtro-bar select, .filtro-bar input {
+            width: auto;
+            padding: 7px 12px;
+            font-size: 14px;
+        }
+        .stat-cards {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            flex: 1;
+            min-width: 120px;
+            background: #fff;
+            border: 1px solid #E5E7EB;
+            border-radius: 10px;
+            padding: 14px 18px;
+            text-align: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+        .stat-card .num  { font-size: 28px; font-weight: bold; color: #1E3A5F; }
+        .stat-card .lbl  { font-size: 12px; color: #6B7280; margin-top: 2px; }
+        .empty-state      { text-align:center; color:#9CA3AF; padding: 40px 0; font-size: 15px; }
+        #secMisCasos, #secPerfil { display: none; }
+        #secMisCasos.activa, #secPerfil.activa { display: block; }
+        .sidebar button.sel { background: #1E3A8A; }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h3>⚖ Sistema Jurídico</h3>
+        <button id="btnNav1" onclick="mostrarSeccion('secMisCasos')">📋 Mis Casos</button>
+        <button id="btnNav2" onclick="mostrarSeccion('secPerfil')">👤 Mi Perfil</button>
+        <button class="logout" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main">
+        <h1 id="bienvenida">Bienvenido</h1>
+
+        <!-- ── MIS CASOS ── -->
+        <div id="secMisCasos" class="activa">
+
+            <!-- Estadísticas rápidas -->
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="num" id="statTotal">—</div>
+                    <div class="lbl">Total casos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="num" id="statPendiente" style="color:#92400E;">—</div>
+                    <div class="lbl">Pendientes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="num" id="statProceso" style="color:#1E40AF;">—</div>
+                    <div class="lbl">En proceso</div>
+                </div>
+                <div class="stat-card">
+                    <div class="num" id="statFinalizado" style="color:#065F46;">—</div>
+                    <div class="lbl">Finalizados</div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filtro-bar">
+                <label>Filtrar por estado:</label>
+                <select id="filtroEstado" onchange="aplicarFiltro()">
+                    <option value="">Todos</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="En proceso">En proceso</option>
+                    <option value="Finalizado">Finalizado</option>
+                    <option value="Archivado">Archivado</option>
+                </select>
+                <input type="text" id="filtroBuscar" placeholder="Buscar por cliente o título…"
+                       oninput="aplicarFiltro()" style="flex:1; min-width:180px;">
+            </div>
+
+            <!-- Lista de casos -->
+            <div id="listaCasosAbogado"><p class="empty-state">Cargando casos…</p></div>
+        </div>
+
+        <!-- ── MI PERFIL ── -->
+        <div id="secPerfil">
+            <h2>Mi Perfil</h2>
+            <div class="box" style="max-width:420px;">
+                <p><strong>Nombre:</strong>  <span id="perfilNombre">—</span></p>
+                <p><strong>Correo:</strong>  <span id="perfilCorreo">—</span></p>
+                <p><strong>Rol:</strong>     Abogado</p>
+                <hr>
+                
+                
+                <p id="msgClave" style="margin-top:6px; font-weight:bold;"></p>
+            </div>
+        </div>
+
+    </div><!-- /main -->
+</div><!-- /dashboard -->
+
+<script src="../js/script.js"></script>
+<script>
+// ── Estado global ──────────────────────────────────────────
+let todosMisCasos = [];
+
+// ── Inicialización ─────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+    const rol = (sessionStorage.getItem("rol") || "").trim().toLowerCase();
+    const nombre = sessionStorage.getItem("nombre") || "";
+
+    if (rol !== "abogado") { window.location.href = "index.html"; return; }
+
+    document.getElementById("bienvenida").innerText = `Bienvenido, ${nombre}`;
+    document.getElementById("perfilNombre").innerText = nombre;
+    
+    // Si el correo no está en el session, búscalo en la base de datos
+    const correoGuardado = sessionStorage.getItem("correo");
+    if (correoGuardado) {
+        document.getElementById("perfilCorreo").innerText = correoGuardado;
+    } else {
+        obtenerDatosPerfil();
+    }
+
+    cargarMisCasos();
+});
+
+function obtenerDatosPerfil() {
+    const id_usuario = sessionStorage.getItem("id");
+    fetch(phpUrl("obtener_perfil.php?id=" + id_usuario))
+    .then(r => r.json())
+    .then(data => {
+        if(data.correo) {
+            document.getElementById("perfilCorreo").innerText = data.correo;
+            sessionStorage.setItem("correo", data.correo); // Lo guardamos para la próxima
+        }
+    });
+}
+// ── Navegación entre secciones ─────────────────────────────
+function mostrarSeccion(id) {
+    ["secMisCasos", "secPerfil"].forEach(s => {
+        document.getElementById(s).classList.remove("activa");
+    });
+    document.getElementById(id).classList.add("activa");
+}
+
+// ── Cargar casos del abogado desde la BD ───────────────────
+function cargarMisCasos() {
+    // Buscar el id del abogado: guardado como id_abogado en sessionStorage
+    // o fallback al id de usuario
+    const id_abogado = sessionStorage.getItem("id_abogado") || sessionStorage.getItem("id") || 0;
+
+    fetch(phpUrl("gestionar_casos.php"), {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `accion=mis_casos_abogado&id_abogado=${id_abogado}`
+    })
+    .then(r => r.json())
+    .then(lista => {
+        todosMisCasos = lista;
+        actualizarEstadisticas(lista);
+        renderCasos(lista);
+    })
+    .catch(() => {
+        document.getElementById("listaCasosAbogado").innerHTML =
+            `<p class="empty-state">Error al cargar los casos. Verifica la conexión al servidor.</p>`;
+    });
+}
+
+// ── Estadísticas ───────────────────────────────────────────
+function actualizarEstadisticas(lista) {
+    document.getElementById("statTotal").innerText      = lista.length;
+    document.getElementById("statPendiente").innerText  = lista.filter(c => c.estado === "Pendiente").length;
+    document.getElementById("statProceso").innerText    = lista.filter(c => c.estado === "En proceso").length;
+    document.getElementById("statFinalizado").innerText = lista.filter(c => c.estado === "Finalizado").length;
+}
+
+// ── Filtrar ────────────────────────────────────────────────
+function aplicarFiltro() {
+    const estado  = document.getElementById("filtroEstado").value;
+    const buscar  = document.getElementById("filtroBuscar").value.toLowerCase();
+
+    const filtrados = todosMisCasos.filter(c => {
+        const coincideEstado  = !estado || c.estado === estado;
+        const coincideBuscar  = !buscar
+            || (c.titulo         || "").toLowerCase().includes(buscar)
+            || (c.nombre_cliente || "").toLowerCase().includes(buscar)
+            || (c.descripcion    || "").toLowerCase().includes(buscar);
+        return coincideEstado && coincideBuscar;
+    });
+    renderCasos(filtrados);
+}
+
+// ── Renderizar tarjetas de casos ───────────────────────────
+function renderCasos(lista) {
+    const div = document.getElementById("listaCasosAbogado");
+    if (!lista.length) {
+        div.innerHTML = `<p class="empty-state">No hay casos que coincidan con los filtros.</p>`;
+        return;
+    }
+    div.innerHTML = lista.map(c => {
+        const badgeClass = "estado-" + c.estado.replace(" ", "-");
+        return `
+        <div class="card-caso">
+            <h4>${c.titulo}</h4>
+            <p><strong>Cliente:</strong> ${c.nombre_cliente || "—"}</p>
+            <p style="font-size:13px; color:#6B7280;">${c.descripcion}</p>
+            <p style="font-size:12px; color:#9CA3AF;">📅 ${c.fecha_creacion}</p>
+            <div class="card-footer">
+                <span class="estado-badge ${badgeClass}">${c.estado}</span>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <select onchange="actualizarEstadoCaso(${c.id_casos}, this.value)">
+                        <option ${c.estado==='Pendiente'  ?'selected':''}>Pendiente</option>
+                        <option ${c.estado==='En proceso' ?'selected':''}>En proceso</option>
+                        <option ${c.estado==='Finalizado' ?'selected':''}>Finalizado</option>
+                        <option ${c.estado==='Archivado'  ?'selected':''}>Archivado</option>
+                    </select>
+                    <button onclick="actualizarEstadoCaso(${c.id_casos},
+                        document.querySelector('[data-id=\\'${c.id_casos}\\']')?.value)"
+                        style="display:none;">
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ── Actualizar estado de un caso ───────────────────────────
+function actualizarEstadoCaso(id_caso, nuevoEstado) {
+    if (!nuevoEstado) return;
+    fetch(phpUrl("gestionar_casos.php"), {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `accion=estado&id=${id_caso}&estado=${encodeURIComponent(nuevoEstado)}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            // Actualizar en memoria sin recargar toda la lista
+            const caso = todosMisCasos.find(c => c.id_casos == id_caso);
+            if (caso) caso.estado = nuevoEstado;
+            actualizarEstadisticas(todosMisCasos);
+            aplicarFiltro();
+        }
+    });
+}
+
+// ── Cambiar contraseña ─────────────────────────────────────
+function cambiarClave() {
+    const actual    = document.getElementById("claveActual").value;
+    const nueva     = document.getElementById("claveNueva").value;
+    const confirmar = document.getElementById("claveConfirmar").value;
+    const msg       = document.getElementById("msgClave");
+
+    if (!actual || !nueva) { msg.innerText = "Completa todos los campos."; msg.style.color="red"; return; }
+    if (nueva !== confirmar) { msg.innerText = "Las contraseñas no coinciden."; msg.style.color="red"; return; }
+    if (nueva.length < 4) { msg.innerText = "La contraseña debe tener al menos 4 caracteres."; msg.style.color="red"; return; }
+
+    const correo = sessionStorage.getItem("correo") || "";
+    fetch(phpUrl("restablecer.php"), {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `correo=${encodeURIComponent(correo)}&nuevaClave=${encodeURIComponent(nueva)}&confirmarClave=${encodeURIComponent(confirmar)}`
+    })
+    .then(() => {
+        msg.innerText = "✅ Contraseña actualizada correctamente.";
+        msg.style.color = "green";
+        document.getElementById("claveActual").value    = "";
+        document.getElementById("claveNueva").value     = "";
+        document.getElementById("claveConfirmar").value = "";
+    });
+}
+</script>
+</body>
+</html>

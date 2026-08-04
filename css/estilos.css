@@ -1,0 +1,194 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #F4F6F8;
+    color: #333;
+}
+
+/* ===== Animación ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Box (Login, Registro, Recuperar) ===== */
+.box {
+    background: white;
+    padding: 40px;
+    width: 380px;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    animation: fadeIn 0.6s ease-in-out;
+    margin: 50px auto;
+}
+
+/* ===== Dashboards ===== */
+.dashboard {
+    display: block !important; /* Quitamos el flex lateral si existía */
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+ position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 70px !important; /* Un poco más de altura para que respire */
+    background: #1e3a5f !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    padding: 0 30px !important;
+    z-index: 10000 !important; /* Valor muy alto para que nada la tape */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+.sidebar h3 {
+    margin: 0 20px 0 0 !important;
+    font-size: 18px !important;
+    color: white !important;
+}
+
+/* ===== Botones sidebar ===== */
+.sidebar button {
+  margin: 0 8px !important;
+    border-radius: 6px !important;
+    transition: background 0.3s !important;
+}
+
+.sidebar button:hover {
+    background: #2563EB;
+}
+
+/* ===== Botón cerrar sesión ===== */
+.sidebar .logout {
+    margin-left: auto !important; 
+}
+
+.sidebar .logout:hover {
+    background: #162D46;
+}
+
+/* ===== Contenido principal ===== */
+.main {
+  margin-left: 0 !important; 
+    margin-top: 90px !important; /* Aumentamos el margen para que los filtros bajen */
+    padding: 20px 40px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.main h1 {
+    color: #1F3F5F;
+}
+
+.main p {
+    color: #555;
+}
+
+/* ===== Inputs ===== */
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    transition: 0.3s;
+}
+
+input:focus, select:focus {
+    border-color: #3B82F6;
+    outline: none;
+    box-shadow: 0 0 5px rgba(59,130,246,0.4);
+}
+
+/* ===== Botones generales ===== */
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    background: #3B82F6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #2563EB;
+}
+
+/* ===== Botones secundarios ===== */
+button.secondary {
+    background: #6B7280;
+}
+
+button.secondary:hover {
+    background: #4B5563;
+}
+
+/* ===== Links ===== */
+a {
+    display: block;
+    text-align: center;
+    margin-top: 12px;
+    color: #3B82F6;
+    font-size: 14px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Mensajes ===== */
+#mensaje {
+    margin-top: 15px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#mensaje.error {
+    color: #DC2626;
+}
+
+#mensaje.success {
+    color: #16A34A;
+}
+
+/* ===== Listas ===== */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+ul li {
+    background: #F4F6F8;
+    margin: 6px 0;
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+ul li button {
+    background: #6B7280;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+ul li button:hover {
+    background: #4B5563;
+}
+
+.seccion {
+  display: none;
+}
+.seccion.activa {
+  display: block;
+}

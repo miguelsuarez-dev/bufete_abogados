@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Sistema Jurídico</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+<div class="box">
+    <h2>⚖ Sistema Jurídico</h2>
+    <p style="text-align:center; font-size:14px; color:gray;">Gestión de Casos y Expedientes</p>
+
+    <form id="formLogin">
+        <input type="email" name="correo" id="correo" placeholder="Correo" required>
+        <input type="password" name="clave" id="clave" placeholder="Contraseña" required>
+
+        <div id="captcha" style="display:none; margin:10px 0;">
+            <label id="captchaLabel"></label>
+            <input type="text" id="respuesta" placeholder="Tu respuesta">
+        </div>
+
+        <button type="submit">Ingresar</button>
+    </form>
+
+    <p id="mensaje"></p>
+    <a href="registro.html">Crear cuenta</a><br>
+    <a href="recuperar.html">¿Olvidaste tu contraseña?</a>
+</div>
+<script src="../js/script.js"></script>
+</body>
+</html>

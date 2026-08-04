@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Portal Cliente</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+    <style>
+        .estado-badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:bold; }
+        .estado-Pendiente  { background:#FEF3C7; color:#92400E; }
+        .estado-En-proceso { background:#DBEAFE; color:#1E40AF; }
+        .estado-Finalizado { background:#D1FAE5; color:#065F46; }
+        .card-caso { background:#f9f9f9; border:1px solid #ddd; border-radius:8px; padding:14px; margin-bottom:12px; }
+        .card-caso h4 { margin:0 0 6px; color:#1F3F5F; }
+        textarea { width:100%; box-sizing:border-box; padding:10px; border-radius:6px; border:1px solid #d1d5db; }
+        .aviso { background:#FEF3C7; border:1px solid #F59E0B; border-radius:8px; padding:12px; margin-bottom:16px; }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div class="sidebar">
+        <h3>⚖ Sistema Jurídico</h3>
+        <button onclick="mostrarSeccion('secMisCasos')">📋 Mis Casos</button>
+        <button onclick="mostrarSeccion('secNuevaSolicitud')">✏ Nueva Solicitud</button>
+        <button class="logout" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+    <div class="main">
+        <h1 id="bienvenida">Bienvenido</h1>
+
+        <!-- Aviso si el cliente no tiene perfil vinculado -->
+        <div id="avisoSinPerfil" class="aviso" style="display:none;">
+            ⚠ Tu usuario no tiene un perfil de cliente vinculado en la base de datos.
+            Contacta al administrador para que lo registre, o
+            <a href="registro.html">crea una cuenta nueva</a> como cliente.
+        </div>
+
+        <!-- MIS CASOS -->
+        <div id="secMisCasos">
+            <h2>Mis Casos</h2>
+            <div id="listaMisCasos"><p>Cargando...</p></div>
+        </div>
+
+        <!-- NUEVA SOLICITUD -->
+        <div id="secNuevaSolicitud" style="display:none;">
+            <h2>Nueva Solicitud de Caso</h2>
+            <div class="box" style="max-width:560px;">
+                <input  type="text" id="tituloSolicitud" placeholder="Título breve (ej: Problema laboral con empleador)" required
+                        style="margin-bottom:10px;">
+                <textarea id="descSolicitud" rows="6"
+                    placeholder="Describe tu situación con el mayor detalle posible: fechas, personas involucradas, documentos que tienes, qué resultado buscas..."></textarea>
+                <button onclick="enviarSolicitud()" style="margin-top:10px;">Enviar Solicitud</button>
+                <p id="msgSolicitud" style="margin-top:8px; font-weight:bold;"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/script.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const nombre     = sessionStorage.getItem("nombre") || "";
+    const rol        = (sessionStorage.getItem("rol") || "").trim().toLowerCase();
+    const id_cliente = parseInt(sessionStorage.getItem("id_cliente") || "0");
+
+    if (rol !== "cliente") { window.location.href = "index.html"; return; }
+
+    document.getElementById("bienvenida").innerText = `Bienvenido, ${nombre}`;
+
+    if (!id_cliente || id_cliente === 0) {
+        document.getElementById("avisoSinPerfil").style.display = "block";
+        document.getElementById("listaMisCasos").innerHTML =
+            "<p>No se puede cargar tus casos porque tu perfil no está vinculado. Contacta al administrador.</p>";
+    } else {
+        cargarMisCasos();
+    }
+});
+
+function mostrarSeccion(id) {
+    ["secMisCasos","secNuevaSolicitud"].forEach(s => {
+        document.getElementById(s).style.display = (s === id) ? "block" : "none";
+    });
+}
+
+function cargarMisCasos() {
+    const id_cliente = parseInt(sessionStorage.getItem("id_cliente") || "0");
+    if (!id_cliente) return;
+
+    fetch(phpUrl("gestionar_solicitudes.php"), {
+        method: "POST",
+        headers: {"Content-Type":"application/x-www-form-urlencoded"},
+        body: `accion=mis_casos&id_cliente=${id_cliente}`
+    })
+    .then(r => r.json())
+    .then(lista => {
+        const div = document.getElementById("listaMisCasos");
+        if (!lista.length) {
+            div.innerHTML = `<p style="color:#666;">No tienes casos registrados aún.
+                <a href="#" onclick="mostrarSeccion('secNuevaSolicitud')">¿Deseas crear una solicitud?</a></p>`;
+            return;
+        }
+        div.innerHTML = lista.map(c => `
+            <div class="card-caso">
+                <h4>${c.titulo}</h4>
+                <p style="color:#555; font-size:14px;">${c.descripcion}</p>
+                <p><strong>Abogado:</strong> ${c.nombre_abogado
+                    ? `<strong>${c.nombre_abogado}</strong>`
+                    : '<em style="color:#F59E0B;">Pendiente de asignación</em>'}</p>
+                <span class="estado-badge estado-${c.estado.replace(' ','-')}">${c.estado}</span>
+                <small style="float:right; color:#9CA3AF;">${c.fecha_creacion}</small>
+            </div>`).join('');
+    })
+    .catch(() => {
+        document.getElementById("listaMisCasos").innerHTML =
+            "<p style='color:red;'>Error al cargar los casos. Verifica la conexión.</p>";
+    });
+}
+
+function enviarSolicitud() {
+    const titulo     = document.getElementById("tituloSolicitud").value.trim();
+    const desc       = document.getElementById("descSolicitud").value.trim();
+    const msg        = document.getElementById("msgSolicitud");
+    const id_cliente = parseInt(sessionStorage.getItem("id_cliente") || "0");
+
+    if (!id_cliente) {
+        msg.innerText = "⚠ Tu perfil de cliente no está vinculado. Contacta al administrador.";
+        msg.style.color = "red"; return;
+    }
+    if (!titulo) { msg.innerText = "Escribe un título para tu caso."; msg.style.color="red"; return; }
+    if (!desc)   { msg.innerText = "Escribe la descripción de tu situación."; msg.style.color="red"; return; }
+
+    msg.innerText = "Enviando..."; msg.style.color = "#666";
+
+    fetch(phpUrl("gestionar_solicitudes.php"), {
+        method: "POST",
+        headers: {"Content-Type":"application/x-www-form-urlencoded"},
+        body: `accion=solicitar&id_cliente=${id_cliente}&titulo=${encodeURIComponent(titulo)}&descripcion=${encodeURIComponent(desc)}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            msg.innerText = "✅ Solicitud enviada. Un administrador asignará tu abogado pronto.";
+            msg.style.color = "green";
+            document.getElementById("tituloSolicitud").value = "";
+            document.getElementById("descSolicitud").value   = "";
+            setTimeout(() => { mostrarSeccion("secMisCasos"); cargarMisCasos(); }, 2000);
+        } else {
+            msg.innerText = "❌ Error: " + (data.error || "Error desconocido");
+            msg.style.color = "red";
+        }
+    })
+    .catch(err => {
+        msg.innerText = "❌ Error de conexión: " + err;
+        msg.style.color = "red";
+    });
+}
+</script>
+</body>
+</html>

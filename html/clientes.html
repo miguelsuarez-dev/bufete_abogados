@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Clientes</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <div class="sidebar">
+            <h3>⚖ Sistema Jurídico</h3>
+            <button onclick="window.location.href='../html/dashboard-admin.html'">Inicio</button>
+            <button onclick="window.location.href='../html/clientes.html'">Clientes</button>
+            <button onclick="window.location.href='../html/abogados.html'">Abogados</button>
+            <button onclick="window.location.href='casos.html'">Casos</button>
+            <button class="logout" onclick="window.location.href='../html/index.html'">Cerrar sesión</button>
+        </div>
+
+        <div class="main-content" style="display: flex; gap: 20px; padding: 20px; margin-top: 20px; width: 100%;">
+            
+           <div class="box" style="flex: 1; min-width: 320px;">
+    <h2>Gestión de Clientes</h2>
+    <form id="formClientes" onsubmit="guardarCliente(event)">
+        <input type="hidden" id="idClienteOculto" value=""> 
+
+        <label>Identificación</label>
+        <input type="text" id="idDoc" placeholder="Número de Cédula" required>
+
+        <label>Nombre Completo</label>
+        <input type="text" id="nombreCliente" placeholder="Nombre del Cliente" required>
+
+        <label>Correo Electrónico</label>
+        <input type="email" id="correoCliente" placeholder="correo@ejemplo.com" required>
+
+        <label>Dirección</label>
+        <input type="text" id="dirCliente" placeholder="Dirección de residencia" required>
+
+        <label>Teléfono</label>
+        <input type="text" id="telCliente" placeholder="Número de celular" required>
+
+        <div style="margin-top: 15px; display: flex; gap: 10px;">
+            <button type="submit" id="btnFormCliente" style="flex: 2; background-color: #10b981; color: white;">Agregar Cliente</button>
+            
+            <button type="reset" onclick="resetearFormCliente()" style="flex: 1; background-color: #f59e0b; color: white;">Vaciar</button>
+            
+            <button type="button" id="btnCancelarCliente" style="display:none; flex: 1; background: #6b7280; color: white;" onclick="resetearFormCliente()">Cancelar</button>
+        </div>
+    </form>
+</div>
+
+            <div class="box" style="flex: 1.5; min-width: 400px;">
+                <h3>Lista de Clientes</h3>
+                <hr>
+                <div style="max-height: 600px; overflow-y: auto;">
+                    <ul id="listaClientes" style="list-style: none; padding: 0;">
+                        </ul>
+                </div>
+            </div>
+
+        </div> </div>
+
+    <script src="../js/script.js"></script>
+</body>
+
+</html>

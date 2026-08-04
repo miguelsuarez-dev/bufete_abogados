@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Casos y Expedientes</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+    <style>
+        .estado-badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:bold; }
+        .estado-Pendiente  { background:#FEF3C7; color:#92400E; }
+        .estado-En\ proceso { background:#DBEAFE; color:#1E40AF; }
+        .estado-Finalizado { background:#D1FAE5; color:#065F46; }
+        .estado-Archivado  { background:#F3F4F6; color:#6B7280; }
+        .estado-En\ trámite { background:#EDE9FE; color:#5B21B6; }
+        .estado-Cerrado     { background:#FEE2E2; color:#991B1B; }
+
+        .tab-btn { margin-right:8px; margin-bottom:12px; }
+        .tab-btn.activo { background:#1E40AF; }
+        table { border-collapse:collapse; width:100%; margin-top:10px; }
+        th, td { padding:8px 10px; border:1px solid #ddd; text-align:left; font-size:13px; }
+        th { background:#f0f4f8; font-weight:600; }
+        .btn-sm { padding:4px 10px; font-size:12px; margin:2px; width:auto; margin-top:0; }
+        .btn-danger { background:#DC2626; }
+        .btn-warning { background:#D97706; }
+        .btn-success { background:#059669; }
+        .btn-info    { background:#2563EB; }
+        textarea { width:100%; padding:10px; border:1px solid #d1d5db; border-radius:6px;
+                   font-family:inherit; font-size:14px; resize:vertical; margin:8px 0; }
+        .filtros { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; align-items:center; }
+        .filtros select, .filtros input { width:auto; margin:0; padding:8px 12px; }
+        #msgGlobal { padding:10px; border-radius:6px; margin:8px 0; display:none; }
+        .msg-ok  { background:#D1FAE5; color:#065F46; }
+        .msg-err { background:#FEE2E2; color:#991B1B; }
+        .exp-tag { background:#EDE9FE; color:#5B21B6; padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600; }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+<div class="sidebar">
+    <h3>⚖ Sistema Jurídico</h3>
+    <button onclick="window.location.href='dashboard-admin.html'">Inicio</button>
+    <button onclick="window.location.href='clientes.html'">Clientes</button>
+    <button onclick="window.location.href='abogados.html'">Abogados</button>
+    <button onclick="window.location.href='casos.html'">Casos</button>
+    <button class="logout" onclick="cerrarSesion()">Cerrar sesión</button>
+</div>
+<div class="main">
+    <h1>Gestión de Casos y Expedientes</h1>
+    <div id="msgGlobal"></div>
+
+    <!-- TABS -->
+    <button class="tab-btn activo" id="btnSolicitudes" onclick="cambiarTab('solicitudes')">📥 Solicitudes Pendientes</button>
+    <button class="tab-btn" id="btnTodos"        onclick="cambiarTab('todos')">📋 Todos los Casos</button>
+    <button class="tab-btn" id="btnExpedientes"  onclick="cambiarTab('expedientes')">📁 Expedientes</button>
+    <button class="tab-btn" id="btnNuevo"        onclick="cambiarTab('nuevo')">➕ Crear Caso</button>
+
+    <!-- TAB: SOLICITUDES PENDIENTES -->
+    <div id="tabSolicitudes">
+        <h2>Solicitudes sin abogado asignado</h2>
+        <table>
+            <thead><tr>
+                <th>Título</th><th>Cliente</th><th>Descripción</th><th>Fecha</th><th>Estado</th><th>Asignar Abogado</th>
+            </tr></thead>
+            <tbody id="bodySolicitudes"><tr><td colspan="6" style="text-align:center;color:#888;">Cargando...</td></tr></tbody>
+        </table>
+    </div>
+
+    <!-- TAB: TODOS LOS CASOS -->
+    <div id="tabTodos" style="display:none;">
+        <h2>Todos los Casos</h2>
+        <div class="filtros">
+            <label>Filtrar por estado:</label>
+            <select onchange="filtrarCasos(this.value)">
+                <option value="">Todos</option>
+                <option>Pendiente</option>
+                <option>En proceso</option>
+                <option>Finalizado</option>
+                <option>Archivado</option>
+            </select>
+        </div>
+        <table>
+            <thead><tr>
+                <th>ID</th><th>Título</th><th>Cliente</th><th>Abogado</th><th>Estado</th><th>Expediente</th><th>Fecha</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="bodyCasos"><tr><td colspan="8" style="text-align:center;color:#888;">Cargando...</td></tr></tbody>
+        </table>
+    </div>
+
+    <!-- TAB: EXPEDIENTES -->
+    <div id="tabExpedientes" style="display:none;">
+        <h2>Gestión de Expedientes</h2>
+        <div class="filtros">
+            <label>Estado:</label>
+            <select id="filtroEstadoExp" onchange="filtrarExpedientes()">
+                <option value="">Todos</option>
+                <option>En trámite</option>
+                <option>Archivado</option>
+                <option>Cerrado</option>
+            </select>
+            <label>Cliente:</label>
+            <select id="filtroClienteExp" onchange="filtrarExpedientes()">
+                <option value="">Todos</option>
+            </select>
+            <label>Abogado:</label>
+            <select id="filtroAbogadoExp" onchange="filtrarExpedientes()">
+                <option value="">Todos</option>
+            </select>
+            <input type="text" id="filtroBusqueda" placeholder="Buscar..." oninput="filtrarExpedientes()" style="flex:1;">
+        </div>
+        <table>
+            <thead><tr>
+                <th>ID Exp.</th><th>Caso</th><th>Cliente</th><th>Abogado</th><th>Fecha Inicio</th><th>Fecha Fin</th><th>Estado</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="bodyExpedientes"><tr><td colspan="8" style="text-align:center;color:#888;">Cargando...</td></tr></tbody>
+        </table>
+    </div>
+
+    <!-- TAB: NUEVO CASO -->
+    <div id="tabNuevo" style="display:none;">
+        <h2>Crear Nuevo Caso</h2>
+        <div class="box" style="max-width:560px;">
+            <input  type="text" id="tituloCaso" placeholder="Título del caso *" required>
+            <textarea id="descripcionCaso" rows="3" placeholder="Descripción del caso"></textarea>
+            <select id="clienteAsignado">
+                <option value="">Seleccionar cliente... *</option>
+            </select>
+            <select id="abogadoAsignado">
+                <option value="">Seleccionar abogado (opcional — crea expediente)</option>
+            </select>
+            <select id="estadoCaso">
+                <option>Pendiente</option>
+                <option>En proceso</option>
+            </select>
+            <button type="button" onclick="crearCaso()">✔ Crear Caso</button>
+            <p id="msgCaso" style="margin-top:8px;font-size:13px;"></p>
+        </div>
+    </div>
+</div>
+</div>
+
+<script src="../js/script.js"></script>
+<script>
+// ── GLOBALES ──────────────────────────────────────────────────────────
+let todosLosCasos = [];
+let todosLosExpedientes = [];
+let abogadosDisponibles = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+    verificarAcceso("admin");
+    cargarSelectores();
+    cargarSolicitudes();
+    cargarCasos();
+    cargarExpedientes();
+});
+
+// ── TABS ─────────────────────────────────────────────────────────────
+function cambiarTab(tab) {
+    ['solicitudes','todos','expedientes','nuevo'].forEach(t => {
+        const el = document.getElementById("tab" + capitalize(t));
+        const btn = document.getElementById("btn" + capitalize(t));
+        if (el)  el.style.display = "none";
+        if (btn) btn.classList.remove("activo");
+    });
+    const el = document.getElementById("tab" + capitalize(tab));
+    const btn = document.getElementById("btn" + capitalize(tab));
+    if (el)  el.style.display = "block";
+    if (btn) btn.classList.add("activo");
+}
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ── MSG GLOBAL ────────────────────────────────────────────────────────
+function mostrarMsg(txt, tipo = 'ok') {
+    const el = document.getElementById("msgGlobal");
+    el.className = tipo === 'ok' ? 'msg-ok' : 'msg-err';
+    el.innerText = txt;
+    el.style.display = "block";
+    setTimeout(() => { el.style.display = "none"; }, 4000);
+}
+
+// ── CARGAR SELECTORES ─────────────────────────────────────────────────
+function cargarSelectores() {
+    fetch(phpUrl("gestionar_clientes.php"))
+    .then(r => r.json()).then(data => {
+        ['clienteAsignado','filtroClienteExp'].forEach(id => {
+            const sel = document.getElementById(id);
+            if (!sel) return;
+            const base = id === 'filtroClienteExp' ? '<option value="">Todos</option>' : '<option value="">Seleccionar cliente... *</option>';
+            sel.innerHTML = base + data.map(c =>
+                `<option value="${c.id_clientes}">${c.nombre} (${c.cedula})</option>`
+            ).join('');
+        });
+    });
+
+    fetch(phpUrl("gestionar_abogados.php"))
+    .then(r => r.json()).then(data => {
+        abogadosDisponibles = data;
+        ['abogadoAsignado','filtroAbogadoExp'].forEach(id => {
+            const sel = document.getElementById(id);
+            if (!sel) return;
+            const base = id === 'filtroAbogadoExp' ? '<option value="">Todos</option>' : '<option value="">Sin abogado asignado</option>';
+            sel.innerHTML = base + data.map(a =>
+                `<option value="${a.id_abogado}">${a.nombre}</option>`
+            ).join('');
+        });
+        cargarSolicitudes();
+    });
+}
+
+// ── SOLICITUDES PENDIENTES ────────────────────────────────────────────
+function cargarSolicitudes() {
+    fetch(phpUrl("gestionar_solicitudes.php") + "?tipo=pendientes")
+    .then(r => r.json()).then(lista => {
+        const tbody = document.getElementById("bodySolicitudes");
+        if (!lista.length) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#888;">✅ No hay solicitudes pendientes</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = lista.map(c => `
+            <tr>
+                <td><strong>${c.titulo}</strong></td>
+                <td>${c.nombre_cliente || '-'}</td>
+                <td style="max-width:180px;font-size:12px;">${c.descripcion || '-'}</td>
+                <td>${c.fecha_creacion ? c.fecha_creacion.substring(0,10) : '-'}</td>
+                <td><span class="estado-badge estado-${c.estado}">${c.estado}</span></td>
+                <td>
+                    <select id="sel_ab_${c.id_casos}" style="width:150px;margin:0 4px 0 0;padding:4px;">
+                        <option value="">Abogado...</option>
+                        ${abogadosDisponibles.map(a => `<option value="${a.id_abogado}">${a.nombre}</option>`).join('')}
+                    </select>
+                    <select id="sel_est_${c.id_casos}" style="width:120px;margin:0 4px 0 0;padding:4px;">
+                        <option>En proceso</option>
+                        <option>Pendiente</option>
+                        <option>Finalizado</option>
+                    </select>
+                    <button class="btn-sm btn-success" onclick="asignarAbogado(${c.id_casos})">✔ Asignar</button>
+                </td>
+            </tr>`).join('');
+    });
+}
+
+function asignarAbogado(id_caso) {
+    const id_abogado = document.getElementById("sel_ab_" + id_caso).value;
+    const estado     = document.getElementById("sel_est_" + id_caso).value;
+    if (!id_abogado) { mostrarMsg("Selecciona un abogado", 'err'); return; }
+
+    const body = `accion=asignar&id_caso=${id_caso}&id_abogado=${id_abogado}&estado=${encodeURIComponent(estado)}`;
+    fetch(phpUrl("gestionar_solicitudes.php"), {
+        method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body
+    }).then(r => r.json()).then(data => {
+        if (data.ok) {
+            mostrarMsg(`✅ Abogado asignado. Expediente #${data.id_expediente} creado.`);
+            cargarSolicitudes(); cargarCasos(); cargarExpedientes();
+        } else {
+            mostrarMsg("Error: " + data.error, 'err');
+        }
+    });
+}
+
+// ── TODOS LOS CASOS ───────────────────────────────────────────────────
+function cargarCasos() {
+    fetch(phpUrl("gestionar_casos.php?accion=leer_todos"))
+    .then(r => r.json()).then(lista => {
+        todosLosCasos = lista;
+        renderCasos(lista);
+    });
+}
+
+function renderCasos(lista) {
+    const tbody = document.getElementById("bodyCasos");
+    if (!lista.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#888;">No hay casos registrados</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = lista.map(c => `
+        <tr>
+            <td>#${c.id_casos}</td>
+            <td><strong>${c.titulo}</strong></td>
+            <td>${c.nombre_cliente || '-'}</td>
+            <td>${c.nombre_abogado || '<em style="color:#aaa;">No asignado</em>'}</td>
+            <td><span class="estado-badge estado-${c.estado}">${c.estado}</span></td>
+            <td>${c.id_expediente ? '<span class="exp-tag">EXP-' + String(c.id_expediente).padStart(3,'0') + '</span>' : '<em style="color:#aaa;">Sin exp.</em>'}</td>
+            <td>${c.fecha_creacion ? c.fecha_creacion.substring(0,10) : '-'}</td>
+            <td>
+                <select id="est_caso_${c.id_casos}" style="padding:3px;font-size:12px;width:110px;">
+                    <option ${c.estado==='Pendiente'?'selected':''}>Pendiente</option>
+                    <option ${c.estado==='En proceso'?'selected':''}>En proceso</option>
+                    <option ${c.estado==='Finalizado'?'selected':''}>Finalizado</option>
+                    <option ${c.estado==='Archivado'?'selected':''}>Archivado</option>
+                </select>
+                <button class="btn-sm btn-info" onclick="cambiarEstadoCaso(${c.id_casos})">Actualizar</button>
+                <button class="btn-sm btn-danger" onclick="eliminarCaso(${c.id_casos})">Eliminar</button>
+            </td>
+        </tr>`).join('');
+}
+
+function filtrarCasos(estado) {
+    if (!estado) { renderCasos(todosLosCasos); return; }
+    renderCasos(todosLosCasos.filter(c => c.estado === estado));
+}
+
+function cambiarEstadoCaso(id) {
+    const estado = document.getElementById("est_caso_" + id).value;
+    const body = `accion=estado&id=${id}&estado=${encodeURIComponent(estado)}`;
+    fetch(phpUrl("gestionar_casos.php"), {
+        method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body
+    }).then(r => r.json()).then(data => {
+        if (data.ok) { mostrarMsg("✅ Estado actualizado"); cargarCasos(); cargarExpedientes(); }
+        else mostrarMsg("Error: " + data.error, 'err');
+    });
+}
+
+function eliminarCaso(id) {
+    if (!confirm("¿Eliminar este caso? También se eliminarán sus expedientes.")) return;
+    fetch(phpUrl("gestionar_casos.php"), {
+        method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        body: `accion=eliminar&id=${id}`
+    }).then(r => r.json()).then(data => {
+        if (data.ok) { mostrarMsg("✅ Caso eliminado"); cargarCasos(); cargarExpedientes(); cargarSolicitudes(); }
+        else mostrarMsg("Error: " + data.error, 'err');
+    });
+}
+
+// ── EXPEDIENTES ───────────────────────────────────────────────────────
+function cargarExpedientes(params = '') {
+    fetch(phpUrl("gestionar_expedientes.php?accion=listar" + params))
+    .then(r => r.json()).then(lista => {
+        todosLosExpedientes = lista;
+        renderExpedientes(lista);
+    });
+}
+
+function filtrarExpedientes() {
+    const estado   = document.getElementById("filtroEstadoExp").value;
+    const cliente  = document.getElementById("filtroClienteExp").value;
+    const abogado  = document.getElementById("filtroAbogadoExp").value;
+    const busqueda = document.getElementById("filtroBusqueda").value.trim();
+
+    let params = '';
+    if (estado)   params += `&estado=${encodeURIComponent(estado)}`;
+    if (cliente)  params += `&id_cliente=${cliente}`;
+    if (abogado)  params += `&id_abogado=${abogado}`;
+    if (busqueda) params += `&busqueda=${encodeURIComponent(busqueda)}`;
+
+    cargarExpedientes(params);
+}
+
+function renderExpedientes(lista) {
+    const tbody = document.getElementById("bodyExpedientes");
+    if (!lista.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#888;">No hay expedientes que coincidan</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = lista.map(e => `
+        <tr>
+            <td><strong>EXP-${String(e.id_expediente).padStart(3,'0')}</strong></td>
+            <td>${e.titulo_caso || '#' + e.id_casos}</td>
+            <td>${e.nombre_cliente || '-'}</td>
+            <td>${e.nombre_abogado || '<em style="color:#aaa;">Sin abogado</em>'}</td>
+            <td>${e.fecha_inicio || '-'}</td>
+            <td>${e.fecha_final || '<em style="color:#aaa;">—</em>'}</td>
+            <td><span class="estado-badge estado-${e.estado}">${e.estado}</span></td>
+            <td>
+                <select id="est_exp_${e.id_expediente}" style="padding:3px;font-size:12px;width:110px;">
+                    <option ${e.estado==='En trámite'?'selected':''}>En trámite</option>
+                    <option ${e.estado==='Archivado'?'selected':''}>Archivado</option>
+                    <option ${e.estado==='Cerrado'?'selected':''}>Cerrado</option>
+                </select>
+                <button class="btn-sm btn-info" onclick="actualizarExpediente(${e.id_expediente})">Actualizar</button>
+                <button class="btn-sm btn-warning" onclick="archivarExpediente(${e.id_expediente})">Archivar</button>
+                <button class="btn-sm btn-danger" onclick="eliminarExpediente(${e.id_expediente})">Eliminar</button>
+            </td>
+        </tr>`).join('');
+}
+
+function actualizarExpediente(id) {
+    const estado = document.getElementById("est_exp_" + id).value;
+    fetch(phpUrl("gestionar_expedientes.php"), {
+        method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        body: `accion=actualizar&id=${id}&estado=${encodeURIComponent(estado)}`
+    }).then(r => r.json()).then(data => {
+        if (data.ok) { mostrarMsg("✅ Expediente actualizado"); cargarExpedientes(); cargarCasos(); }
+        else mostrarMsg("Error: " + data.error, 'err');
+    });
+}
+
+function archivarExpediente(id) {
+    if (!confirm("¿Archivar este expediente?")) return;
+    fetch(phpUrl("gestionar_expedientes.php"), {
+        method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        body: `accion=archivar&id=${id}`
+    }).then(r => r.json()).then(data => {
+        if (data.ok) { mostrarMsg("✅ Expediente archivado"); cargarExpedientes(); }
+        else mostrarMsg("Error: " + data.error, 'err');
+    });
+}
+
+function eliminarExpediente(id) {
+    if (!confirm("¿Eliminar este expediente permanentemente?")) return;
+    fetch(phpUrl("gestionar_expedientes.php"), {
+        method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        body: `accion=eliminar&id=${id}`
+    }).then(r => r.json()).then(data => {
+        if (data.ok) { mostrarMsg("✅ Expediente eliminado"); cargarExpedientes(); cargarCasos(); }
+        else mostrarMsg("Error: " + data.error, 'err');
+    });
+}
+
+// ── CREAR CASO ────────────────────────────────────────────────────────
+function crearCaso() {
+    const titulo      = document.getElementById("tituloCaso").value.trim();
+    const descripcion = document.getElementById("descripcionCaso").value.trim();
+    const id_cliente  = document.getElementById("clienteAsignado").value;
+    const id_abogado  = document.getElementById("abogadoAsignado").value;
+    const estado      = document.getElementById("estadoCaso").value;
+    const msg         = document.getElementById("msgCaso");
+
+    if (!titulo || !id_cliente) {
+        msg.style.color = "red"; msg.innerText = "Título y cliente son obligatorios."; return;
+    }
+
+    const body = `accion=crear&titulo=${encodeURIComponent(titulo)}&descripcion=${encodeURIComponent(descripcion)}&id_cliente=${id_cliente}&id_abogado=${id_abogado}&estado=${encodeURIComponent(estado)}`;
+
+    fetch(phpUrl("gestionar_casos.php"), {
+        method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body
+    }).then(r => r.json()).then(data => {
+        if (data.ok) {
+            const expInfo = data.id_expediente ? ` | Expediente EXP-${String(data.id_expediente).padStart(3,'0')} creado` : '';
+            msg.style.color = "green";
+            msg.innerText = `✅ Caso #${data.id_caso} creado exitosamente${expInfo}`;
+            document.getElementById("tituloCaso").value = '';
+            document.getElementById("descripcionCaso").value = '';
+            document.getElementById("clienteAsignado").value = '';
+            document.getElementById("abogadoAsignado").value = '';
+            cargarCasos(); cargarExpedientes(); cargarSolicitudes();
+        } else {
+            msg.style.color = "red"; msg.innerText = "Error: " + data.error;
+        }
+    });
+}
+</script>
+</body>
+</html>
